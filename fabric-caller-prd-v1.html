@@ -258,7 +258,7 @@
     <div style="opacity:0.9;font-size:14px;">让授权卡片能识别调用方身份并显示对应文案</div>
     <div class="meta">
       <span>📅 创建：2026-05-18</span>
-      <span>🏷️ 版本：v1.0</span>
+      <span>🏷️ 版本：v1.1</span>
       <span>👤 作者：张振</span>
     </div>
   </div>
@@ -279,6 +279,11 @@
     </div>
 
     <p style="margin-top:10px;">本方案站在 Fabric 平台视角，将<b>业务方（Caller）作为系统级独立实体</b>，文案跟随 Caller 维护。</p>
+
+    <div class="callout tip" style="margin-top:14px;">
+      <div class="title">📌 v1.1 变更说明</div>
+      <b>新增覆盖场景：</b>POPO-CLI 首次安装时调用 Fabric 应用授权接口，也统一走 Caller 机制（带 <code>caller_id</code> 参数）。Fabric 端不再为 POPO-CLI 硬编码识别身份。详见<b>第 4 章</b>。
+    </div>
   </div>
 
   <!-- 二、一期目标 vs 不做 -->
@@ -338,20 +343,68 @@
   (<span class="str">'popo-bot'</span>, <span class="str">'POPO Bot'</span>, <span class="str">'POPO Bot 请求访问以下权限：'</span>);</pre>
   </div>
 
-  <!-- 四、接口协议 -->
+  <!-- 四、覆盖的两个调用场景 -->
   <div class="section">
-    <div class="section-title"><span class="num">4</span>接口协议</div>
+    <div class="section-title"><span class="num">4</span>一期覆盖的两个调用场景（统一走 Caller 机制）</div>
 
-    <p><b>业务方调用 Fabric API 时</b>，需在请求头中携带 <code>X-Caller-ID</code>：</p>
+    <p>一期 Caller 机制同时覆盖<b>两个</b> POPO-CLI 调用 Fabric 的场景，<b>共用同一张 caller 表、同一份 card_copy 文案、同一套识别逻辑</b>。Fabric 端不再为 POPO-CLI 做硬编码特例。</p>
+
+    <table>
+      <thead>
+        <tr><th>场景</th><th>触发时机</th><th>调用 Fabric 的方式</th><th>当前现状</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>① 首次安装授权</b></td>
+          <td>用户执行 <code>install-v1.sh</code> 后，POPO-CLI 调用 Fabric 应用授权接口</td>
+          <td>调用授权接口时带入 <code>caller_id=popo-cli</code></td>
+          <td>当前 Fabric 端硬编码识别为 POPO-CLI，需改造</td>
+        </tr>
+        <tr>
+          <td><b>② 日常 API 调用</b></td>
+          <td>Agent 通过 popo-cli 调用 Fabric API 时</td>
+          <td>请求 Header 携带 <code>X-Caller-ID: popo-cli</code></td>
+          <td>当前 Fabric 端无业务方识别能力，需新增</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <div class="title">💡 这样设计的好处</div>
+      <ul style="margin-top:6px;padding-left:18px;">
+        <li><b>不为 POPO-CLI 开特殊通道</b>——POPO-CLI 在 Fabric 眼里只是一个普通业务方，跟未来 POPO Bot、其他业务方接入路径完全一致</li>
+        <li><b>统一性</b>——首次授权与日常调用走同一套 caller 识别逻辑，没有"安装时特例代码"</li>
+        <li><b>未来业务方接入零特例</b>——新业务方接入时仅需注册一条 caller 数据 + 调用时带 caller_id，Fabric 端永远不需要为新业务方加硬编码</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 五、接口协议 -->
+  <div class="section">
+    <div class="section-title"><span class="num">5</span>接口协议</div>
+
+    <h4 style="font-size:14px;margin-bottom:8px;color:#0f172a;">场景 ① 首次安装授权</h4>
+    <p>POPO-CLI 调用 Fabric 应用授权接口时，带入 <code>caller_id</code> 参数：</p>
+    <pre><span class="com"># 示例（具体接口路径以 Fabric 现有授权接口为准）</span>
+<span class="kw">POST</span> /api/v1/open-apis/gateway/auth/install
+<span class="key">Body:</span>
+  {
+    <span class="str">"caller_id"</span>: <span class="str">"popo-cli"</span>,
+    <span class="str">"device_info"</span>: {...}
+  }</pre>
+
+    <h4 style="font-size:14px;margin:14px 0 8px;color:#0f172a;">场景 ② 日常 API 调用</h4>
+    <p>业务方调用 Fabric API 时，请求头携带 <code>X-Caller-ID</code>：</p>
     <pre><span class="kw">POST</span> /api/v1/open-apis/gateway/appcode/popo/_invoke
 <span class="key">Headers:</span>
   <span class="str">X-Caller-ID</span>: popo-cli
 <span class="key">Body:</span>
   {<span class="str">"tool"</span>: <span class="str">"popo_message_send_p2p"</span>, <span class="str">"params"</span>: {...}}</pre>
 
-    <p><b>Fabric 平台接收逻辑（伪代码）：</b></p>
+    <h4 style="font-size:14px;margin:14px 0 8px;color:#0f172a;">Fabric 平台接收逻辑（伪代码）</h4>
     <pre><span class="kw">def</span> get_card_copy(request):
-    caller_id = request.headers.get(<span class="str">"X-Caller-ID"</span>)
+    <span class="com"># 兼容两种入参方式</span>
+    caller_id = request.headers.get(<span class="str">"X-Caller-ID"</span>) <span class="kw">or</span> request.body.get(<span class="str">"caller_id"</span>)
 
     <span class="kw">if not</span> caller_id:
         <span class="kw">return</span> DEFAULT_COPY  <span class="com"># "请求访问以下权限："</span>
@@ -369,9 +422,9 @@
     </div>
   </div>
 
-  <!-- 五、授权卡片改造 -->
+  <!-- 六、授权卡片改造 -->
   <div class="section">
-    <div class="section-title"><span class="num">5</span>授权卡片改造</div>
+    <div class="section-title"><span class="num">6</span>授权卡片改造</div>
 
     <p>仅修改卡片顶部一行文案，其他部分不变：</p>
 
@@ -417,24 +470,38 @@
     </p>
   </div>
 
-  <!-- 六、一期接入计划 -->
+  <!-- 七、一期接入计划 -->
   <div class="section">
-    <div class="section-title"><span class="num">6</span>一期接入计划</div>
+    <div class="section-title"><span class="num">7</span>一期接入计划</div>
 
     <table>
       <thead>
-        <tr><th>序号</th><th>业务方</th><th>caller_id</th><th>授权卡片文案</th><th>接入责任人</th></tr>
+        <tr><th>序号</th><th>业务方</th><th>caller_id</th><th>授权卡片文案</th><th>覆盖场景</th><th></th>接入责任人</th></tr>
       </thead>
       <tbody>
-        <tr><td>1</td><td>POPO CLI</td><td><code>popo-cli</code></td><td>POPO CLI 请求访问以下权限：</td><td>POPO-CLI 团队</td></tr>
-        <tr><td>2</td><td>POPO Bot（如适用）</td><td><code>popo-bot</code></td><td>POPO Bot 请求访问以下权限：</td><td>POPO Bot 团队</td></tr>
+        <tr>
+          <td>1</td>
+          <td>POPO CLI</td>
+          <td><code>popo-cli</code></td>
+          <td>POPO CLI 请求访问以下权限：</td>
+          <td>① 首次安装授权<br>② 日常 API 调用</td>
+          <td>POPO-CLI 团队</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>POPO Bot（如适用）</td>
+          <td><code>popo-bot</code></td>
+          <td>POPO Bot 请求访问以下权限：</td>
+          <td>② 日常 API 调用</td>
+          <td>POPO Bot 团队</td>
+        </tr>
       </tbody>
     </table>
   </div>
 
   <!-- 七、一期 → 二期演进路线图 -->
   <div class="section">
-    <div class="section-title"><span class="num">7</span>一期 → 二期演进路线图</div>
+    <div class="section-title"><span class="num">8</span>一期 → 二期演进路线图</div>
 
     <p>一期是骨架，二期是给骨架穿衣服。<b>所有二期能力都是"加字段、加 UI、加校验"，不需要推翻一期的数据模型与接口协议。</b></p>
 
@@ -525,7 +592,7 @@
 
   <!-- 八、附录：术语 -->
   <div class="section">
-    <div class="section-title"><span class="num">8</span>附录：术语表</div>
+    <div class="section-title"><span class="num">9</span>附录：术语表</div>
     <table>
       <thead>
         <tr><th>术语</th><th>说明</th></tr>
