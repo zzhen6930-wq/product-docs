@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fabric 六场业务访谈 · 痛点共性与差异分析</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --ink:#1f2329; --sub:#5a6069; --line:#e7e9ee;
+    --brand:#2b5cff; --brand-soft:#eef2ff; --red:#e5484d; --red-soft:#fdecec;
+    --amber:#e6a417; --amber-soft:#fff6e5; --green:#12a150; --green-soft:#e9f7ef;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.7;font-size:15px;}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 20px 80px;}
+  header.hero{background:linear-gradient(135deg,#2b5cff,#5b7bff);color:#fff;
+    border-radius:18px;padding:32px;margin-bottom:22px;box-shadow:0 8px 24px rgba(43,92,255,.22);}
+  header.hero h1{margin:0 0 8px;font-size:25px;}
+  header.hero p{margin:5px 0;opacity:.94;font-size:14px;}
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:22px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(20,30,60,.04);}
+  h2{font-size:19px;margin:2px 0 14px;padding-bottom:10px;border-bottom:2px solid var(--brand-soft);}
+  h2 .n{display:inline-block;background:var(--brand);color:#fff;border-radius:8px;
+    min-width:26px;height:26px;line-height:26px;text-align:center;font-size:13px;margin-right:9px;padding:0 4px;}
+  h3{font-size:16px;margin:18px 0 8px;}
+  h3.pain{background:var(--red-soft);border-left:4px solid var(--red);padding:8px 12px;border-radius:0 8px 8px 0;}
+  h3.pain.amber{background:var(--amber-soft);border-left-color:var(--amber);}
+  .cover{display:inline-block;font-size:12.5px;color:var(--sub);background:#f2f4f8;
+    padding:3px 10px;border-radius:20px;margin:2px 0 8px;font-weight:600;}
+  table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:var(--brand-soft);color:#2b3a6b;font-weight:600;}
+  tr:nth-child(even) td{background:#fafbfe;}
+  td.dept{font-weight:600;white-space:nowrap;}
+  .essence{background:#f7f8fa;border-left:3px solid #c3c8d2;padding:9px 13px;margin:8px 0 2px;
+    font-size:13.5px;color:var(--sub);border-radius:0 8px 8px 0;}
+  .essence b{color:var(--ink);}
+  .bar{font-family:monospace;font-size:13px;color:#2b2f36;white-space:nowrap;margin:3px 0;}
+  .star{color:var(--amber);letter-spacing:1px;}
+  .pri{border-left:5px solid var(--brand);padding-left:14px;margin:16px 0;}
+  .pri h3{margin-top:0;}
+  .p0{border-left-color:var(--red);} .p1{border-left-color:var(--amber);}
+  .p2{border-left-color:var(--brand);} .p3{border-left-color:#12a150;} .p4{border-left-color:#8a94a6;}
+  .tagp{display:inline-block;font-size:12px;font-weight:700;color:#fff;border-radius:6px;padding:1px 8px;margin-right:8px;}
+  .t0{background:var(--red);} .t1{background:var(--amber);} .t2{background:var(--brand);}
+  .t3{background:#12a150;} .t4{background:#8a94a6;}
+  .foot{text-align:center;color:var(--sub);font-size:13px;margin-top:26px;}
+  .lead{margin-top:14px;background:rgba(255,255,255,.16);border-left:4px solid #fff;
+    padding:11px 15px;border-radius:8px;font-size:14px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>Fabric 六场业务访谈 · 痛点共性与差异分析</h1>
+  <p>覆盖业务域：易生活/差旅、费控/财务、核算/支付、资金、Echo、数据</p>
+  <p style="color:#e6ecff;font-size:13.5px;">本报告以客观呈现各业务方反馈为主：先看共性（谁提了、原话怎么说），再看差异（各家不同在哪），最后给排期建议。</p>
+</header>
+
+<!-- 场景画像 -->
+<section class="card">
+  <h2><span class="n">一</span>六部门场景画像（先理解差异，才能看懂共性）</h2>
+  <table>
+    <tr><th>部门</th><th>核心场景</th><th>场景类型</th><th>交付形态</th><th>准确性容忍度</th><th>特殊性</th></tr>
+    <tr><td class="dept">费控/财务</td><td>制度问答+编码查询+单据审核</td><td>知识问答+Skill</td><td>SDK+IM Bot（统一入口）</td><td>高</td><td>业务域多、团队多、用户统一 → 天然要<b>多 Agent</b></td></tr>
+    <tr><td class="dept">核算/支付</td><td>挂账分析、对账查询、报表穿透</td><td>页面内嵌助手</td><td>业务系统内嵌</td><td><b>极高</b></td><td>深度<b>系统联动</b>（带参、穿透、猜你想问）</td></tr>
+    <tr><td class="dept">资金</td><td>查款助手</td><td>实时数据查询</td><td>IM Bot</td><td><b>极高（生死线）</b></td><td><b>零幻觉刚需</b>，无人工兜底</td></tr>
+    <tr><td class="dept">数据</td><td>自然语言搭建报表/报告</td><td><b>Code 生成类</b></td><td>数据平台内嵌</td><td>高（还原度）</td><td><b>独一份 Code 场景</b>，线上效果远差于本地</td></tr>
+    <tr><td class="dept">Echo</td><td>员工服务问答+工单</td><td>知识问答</td><td>IM/服务号</td><td>高</td><td><b>平台型客户</b>，下辖几十个租户</td></tr>
+    <tr><td class="dept">易生活/差旅</td><td>点餐/打车/差旅推荐</td><td>To C 推荐+办事</td><td>IM Bot（常驻）</td><td>高</td><td><b>常驻 Bot</b>，需记忆、多场景混合</td></tr>
+  </table>
+</section>
+
+<!-- 共性 -->
+<section class="card">
+  <h2><span class="n">二</span>共性痛点（全行业级，逐条对照各家原话）</h2>
+
+  <h3 class="pain">🔴 共性 1：问题排查能力缺失 —— 所有人的痛</h3>
+  <span class="cover">覆盖：6/6 业务域全部提到</span>
+  <table>
+    <tr><th style="width:130px;">业务域</th><th>具体表现（各家原话）</th></tr>
+    <tr><td class="dept">易生活/差旅</td><td>出问题不好查，没有方便的日志查询入口</td></tr>
+    <tr><td class="dept">费控/财务</td><td>会话中工具调用参数/返回不全，排查依赖平台开发</td></tr>
+    <tr><td class="dept">核算/支付</td><td>看不到完整调用链，知识库召回是黑盒，误召回难定位</td></tr>
+    <tr><td class="dept">资金</td><td>不知道回答准不准，卡片内容不展示，调用过程不可见</td></tr>
+    <tr><td class="dept">Echo</td><td>用户侧和 Echo 侧都看不到中间过程，只能找平台开发查日志</td></tr>
+    <tr><td class="dept">数据</td><td>只有输入输出，效果差不知道差在哪，完全黑盒</td></tr>
+  </table>
+  <div class="essence"><b>本质：</b>平台只给了最终结果，中间过程（用了哪个工具、传了什么参数、返回什么、花多久、哪报错）完全不透明。业务方处于「盲人摸象」，出问题只能找平台开发，效率极低。</div>
+
+  <h3 class="pain">🔴 共性 2：Skill 可观测性 / 治理缺失 —— 迭代没数据支撑</h3>
+  <span class="cover">覆盖：5/6（数据为间接提及，其余均明确提出）</span>
+  <table>
+    <tr><th style="width:130px;">业务域</th><th>具体表现</th></tr>
+    <tr><td class="dept">易生活/差旅</td><td>Skill 发上去后效果完全不知道，没有数据反馈</td></tr>
+    <tr><td class="dept">费控/财务</td><td>Skill 唤起是否准确、执行是否成功，没有量化数据</td></tr>
+    <tr><td class="dept">核算/支付</td><td>Skill 调用量、准确率、耗时分布都没有，业务方被问住</td></tr>
+    <tr><td class="dept">资金</td><td>改完提示词/Skill 后，无法量化评估效果变化</td></tr>
+    <tr><td class="dept">Echo</td><td>Skill 迭代后效果变好变差不知道，成功率/执行率/耗时全无</td></tr>
+  </table>
+  <div class="essence"><b>本质：</b>Skill 是 Agent 的核心能力单元，但平台完全没有围绕 Skill 生命周期的治理（版本、监控、灰度、观测）。业务方改完心里没底，全靠感觉。</div>
+
+  <h3 class="pain">🔴 共性 3：评测体系缺失 —— 改完不知道是好是坏</h3>
+  <span class="cover">覆盖：4/6 明确提出，其余 2 个有隐含需求</span>
+  <table>
+    <tr><th style="width:130px;">业务域</th><th>具体表现</th></tr>
+    <tr><td class="dept">核算/支付</td><td>改一处坏一处，没有回归测试，提示词几百行改完没底</td></tr>
+    <tr><td class="dept">资金</td><td>没有评估手段，测试集构建困难，人工覆盖不全</td></tr>
+    <tr><td class="dept">Echo</td><td>Agent 效果无法评估，提示词改动效果全靠感觉</td></tr>
+    <tr><td class="dept">数据</td><td>报表生成质量靠人眼判断，没有客观标准</td></tr>
+  </table>
+  <div class="essence"><b>本质：</b>缺少标准化的 Agent 评估框架。业务方无法量化「效果提升了多少」，也就无法判断投入产出。</div>
+
+  <h3 class="pain">🔴 共性 4：Prompt 版本管理缺失</h3>
+  <span class="cover">覆盖：3/6 明确提及，其余隐含</span>
+  <table>
+    <tr><th style="width:130px;">业务域</th><th>具体表现</th></tr>
+    <tr><td class="dept">易生活/差旅</td><td>版本全靠线下管理，容易搞乱，无法回退</td></tr>
+    <tr><td class="dept">费控/财务</td><td>提示词 300+ 行，越来越长，没有版本概念</td></tr>
+    <tr><td class="dept">Echo</td><td>频繁改提示词，改乱了不知道当前用的是哪版</td></tr>
+  </table>
+  <div class="essence"><b>本质：</b>Skill 已经有版本了，但 Prompt 作为改动最频繁的资产，反而没有版本管理。</div>
+
+  <h3 class="pain amber">🟡 共性 5：服务稳定性 & 被动响应</h3>
+  <span class="cover">覆盖：3/6 明确提及</span>
+  <table>
+    <tr><th style="width:130px;">业务域</th><th>具体表现</th></tr>
+    <tr><td class="dept">Echo</td><td>服务挂了不知道，额度用完了才知道，全靠用户反馈驱动</td></tr>
+    <tr><td class="dept">数据</td><td>经常出现「不动了」的情况，不知道是挂了还是在处理</td></tr>
+    <tr><td class="dept">资金</td><td>（隐含）幻觉问题部分源于服务/会话状态不稳定</td></tr>
+  </table>
+  <div class="essence"><b>本质：</b>平台缺乏主动的健康检查和预警机制，业务方总是最后一个知道出问题的人。</div>
+</section>
+
+<!-- 差异 -->
+<section class="card">
+  <h2><span class="n">三</span>差异痛点（各业务域的独特性）</h2>
+
+  <h3>3.1 按「最关心痛点」分类</h3>
+  <table>
+    <tr><th style="width:130px;">业务域</th><th>最关心痛点</th><th>独特性</th></tr>
+    <tr><td class="dept">易生活/差旅</td><td>Skill 治理体系</td><td>从研发视角出发，要 CI/CD、灰度、观测一整套工程化能力</td></tr>
+    <tr><td class="dept">费控/财务</td><td>多 Agent / Team 能力</td><td>业务域最多、背后团队最多，单 Agent 撑不住，需要架构升级</td></tr>
+    <tr><td class="dept">核算/支付</td><td>交互体验</td><td>页面内嵌，展示区域小、思考过程多，用户因体验差用不起来</td></tr>
+    <tr><td class="dept">资金</td><td><b>幻觉 / 数据准确性</b></td><td>唯一把准确性提到「生死线」的场景，编造数据 = 业务事故</td></tr>
+    <tr><td class="dept">Echo</td><td><b>权限管控</b></td><td>唯一的平台型客户，几十个租户共用，粗粒度权限完全不可用</td></tr>
+    <tr><td class="dept">数据</td><td><b>效果差 / 指令遵循弱</b></td><td>唯一的 Code 类场景，线上效果远不如本地，差距原因不明</td></tr>
+  </table>
+
+  <h3>3.2 场景形态的差异</h3>
+  <table>
+    <tr><th style="width:130px;">场景形态</th><th>代表业务</th><th>核心诉求差异</th></tr>
+    <tr><td class="dept">IM Bot 对话</td><td>易生活/差旅、费控/财务、Echo</td><td>记忆能力、Bot 体验、多入口整合</td></tr>
+    <tr><td class="dept">页面内嵌助手</td><td>核算/支付</td><td>交互体验、带参发起、业务系统深度联动</td></tr>
+    <tr><td class="dept">数据查询工具</td><td>资金</td><td>准确性保障、要素可视化、接口必调</td></tr>
+    <tr><td class="dept">平台运营</td><td>Echo</td><td>权限管控、租户隔离、批量管理</td></tr>
+    <tr><td class="dept">代码生成</td><td>数据</td><td>指令遵循、执行环境、模板还原度</td></tr>
+  </table>
+
+  <h3>3.3 对「多 Agent」诉求的差异</h3>
+  <table>
+    <tr><th style="width:130px;">业务域</th><th>诉求强度</th><th>阶段</th></tr>
+    <tr><td class="dept">费控/财务</td><td><span class="star">⭐⭐⭐⭐⭐</span> 强烈</td><td>1. 提示词 300+ 行，需要拆分为不同 Agent；2. 有统一大财务 Bot 入口的规划</td></tr>
+    <tr><td class="dept">Echo</td><td><span class="star">⭐⭐⭐</span> 中等</td><td>试过但性能不行（40 秒），等平台性能提升后再考虑</td></tr>
+    <tr><td class="dept">资金</td><td><span class="star">⭐⭐</span> 较弱</td><td>有跨租户共享需求，但不紧迫</td></tr>
+    <tr><td class="dept">易生活/差旅</td><td><span class="star">⭐</span> 弱</td><td>单 Agent 够用，多场景混合靠记忆和上下文管理</td></tr>
+    <tr><td class="dept">核算/支付</td><td><span class="star">⭐</span> 弱</td><td>场景集中，单 Agent 够用</td></tr>
+    <tr><td class="dept">数据</td><td><span class="star">⭐</span> 弱</td><td>场景单一，关注点在效果而非架构</td></tr>
+  </table>
+
+  <h3>3.4 对使用知识本构建知识库诉求的反馈</h3>
+  <table>
+    <tr><th style="width:130px;">业务域</th><th>诉求强度</th><th>核心关注点</th></tr>
+    <tr><td class="dept">费控/财务</td><td><span class="star">⭐</span> 无</td><td>当前有控权能力（角色/部门/个人/文件夹），没有控权就不切换</td></tr>
+    <tr><td class="dept">Echo</td><td><span class="star">⭐</span> 无</td><td>租户多、知识多，会迭代 Echo，不会做迁移</td></tr>
+    <tr><td class="dept">核算/支付</td><td><span class="star">⭐⭐</span> 弱</td><td>之前没考虑，重点是要能展示检索中间结果透出、误召回定位</td></tr>
+    <tr><td class="dept">易生活/差旅</td><td><span class="star">⭐⭐</span> 弱</td><td>行政问答场景有需求但不迫切</td></tr>
+    <tr><td class="dept">资金</td><td><span class="star">⭐</span> 无</td><td>全是实时数据，不走知识库</td></tr>
+    <tr><td class="dept">数据</td><td><span class="star">⭐</span> 无</td><td>代码生成场景，不需要知识库</td></tr>
+  </table>
+</section>
+
+<!-- 优先级 -->
+<section class="card">
+  <h2><span class="n">四</span>平台迭代优先级建议</h2>
+
+  <div class="pri p0">
+    <h3><span class="tagp t0">P0</span>基础建设（所有人都痛，必须先做）</h3>
+    <table>
+      <tr><th>能力</th><th style="width:110px;">覆盖</th><th>说明</th></tr>
+      <tr><td class="dept">会话详情页（完整调用链）</td><td>6/6</td><td>工具调用、参数、返回、耗时、报错全展示，业务方能自己排查</td></tr>
+      <tr><td class="dept">Skill 监控统计</td><td>5/6</td><td>唤起率、执行准确率、耗时、调用量、Token 消耗</td></tr>
+      <tr><td class="dept">Prompt 版本管理</td><td>3/6+</td><td>提示词是改动最频繁的资产，必须有版本和回滚</td></tr>
+    </table>
+  </div>
+
+  <div class="pri p1">
+    <h3><span class="tagp t1">P1</span>质量保障体系（敢用、敢迭代的前提）</h3>
+    <table>
+      <tr><th>能力</th><th style="width:110px;">覆盖</th><th>说明</th></tr>
+      <tr><td class="dept">Agent 评测体系</td><td>4/6+</td><td>通用评测框架 + 业务自定义维度 + 测试集管理</td></tr>
+      <tr><td class="dept">测试集构建辅助</td><td>3/6</td><td>从历史会话提取 bad case、扩展生成测试用例</td></tr>
+      <tr><td class="dept">灰度发布能力</td><td>2/6+</td><td>Skill 灰度、Agent 版本灰度，配套观测指标</td></tr>
+    </table>
+  </div>
+
+  <div class="pri p2">
+    <h3><span class="tagp t2">P2</span>架构升级（复杂业务场景的刚需）</h3>
+    <table>
+      <tr><th>能力</th><th style="width:130px;">覆盖</th><th>说明</th></tr>
+      <tr><td class="dept">多 Agent / Team 能力</td><td>2-3/6</td><td>意图路由 + 一个 Bot 多 Agent + 跨租户调用（<b>需先解决性能</b>）</td></tr>
+      <tr><td class="dept">权限管控精细化</td><td>1/6（有放大效应）</td><td>Echo 下面几十个租户，解决了等于解决一大片</td></tr>
+      <tr><td class="dept">Workflow / 固定节点</td><td>1/6（有战略意义）</td><td>高准确性场景的架构选择，从根本上避免幻觉</td></tr>
+    </table>
+  </div>
+
+  <div class="pri p2">
+    <h3><span class="tagp t2">P2</span>体验优化（提升使用意愿和效率）</h3>
+    <table>
+      <tr><th>能力</th><th style="width:110px;">覆盖</th><th>说明</th></tr>
+      <tr><td class="dept">交互体验优化</td><td>2/6</td><td>思考过程折叠、展示区域优化、卡片展示修复</td></tr>
+      <tr><td class="dept">记忆能力</td><td>2/6</td><td>Bot 常驻场景的核心体验，个人助理类场景刚需</td></tr>
+      <tr><td class="dept">服务稳定性预警</td><td>3/6</td><td>服务异常主动通知、额度提醒、被动转主动</td></tr>
+    </table>
+  </div>
+
+  <div class="pri p2">
+    <h3><span class="tagp t2">P2</span>场景拓展（中长期方向）</h3>
+    <table>
+      <tr><th>能力</th><th style="width:110px;">覆盖</th><th>说明</th></tr>
+      <tr><td class="dept">定时任务 / 周期报告</td><td>2-3/6</td><td>需求广泛但不阻塞，通用性高</td></tr>
+      <tr><td class="dept">知识库集成 + 控权</td><td>2-3/6</td><td>知识本集成到 Fabric，补全管理能力和控权</td></tr>
+      <tr><td class="dept">Code 模式增强</td><td>1/6</td><td>数据报表生成场景，需先评估需求广度</td></tr>
+      <tr><td class="dept">MCP 能力</td><td>1-2/6</td><td>当前 Skill 基本够用，MCP 是远期方向</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 精简洞察 -->
+<section class="card" style="background:linear-gradient(135deg,#eef2ff,#f7f9ff);border-color:#cdd8ff;">
+  <h2><span class="n">五</span>三个关键判断（精简）</h2>
+  <p><b>1. 可观测性是最短的那块板。</b>6 个业务域全部把「看不到中间过程、出问题没法查」列为核心痛点，是平台级基础缺失。没有它，评测、灰度、治理都无从谈起——这是 P0 中的 P0。</p>
+  <p><b>2. 不同场景对平台的要求分化严重。</b>问答类要知识库/多 Agent/控权；工具类要 Skill 治理/工程化；数据类要准确性/确定性/可视化；代码类要指令遵循/执行环境。平台不能「一套方案打所有场景」，需分层设计。</p>
+  <p><b>3. 高准确性场景出现「反 Agent 化」信号，值得警惕。</b>资金侧明确提出纯 Agent 不适合高准确性场景，想要 Workflow 固化流程，或「AI 解析参数 + 固定工具查询 + 审核 Agent 核实数据准确性」的混合架构。平台需思考：除了纯 Agent，是否要提供 Workflow / 固定流程模式，给业务方选择余地。</p>
+</section>
+
+<div class="foot">Fabric 六场业务访谈 · 痛点共性与差异分析　｜　以客观呈现各业务方反馈为主</div>
+
+</div>
+</body>
+</html>
