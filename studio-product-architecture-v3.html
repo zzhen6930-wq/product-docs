@@ -145,9 +145,13 @@
   .core .ch2 .cb{ font-size:11.5px; font-weight:800; color:#fff; background:var(--bar); border-radius:3px; padding:2px 11px; }
   .core .ch2 .cs{ font-size:10.5px; color:var(--sub); }
   .core .ch2 .cs b{ color:var(--ink); }
-  .core-g{ display:grid; grid-template-columns:1fr 1fr; gap:8px; align-items:stretch; }
+  .core-g{ display:grid; grid-template-columns:1.12fr 1fr .78fr; gap:8px; align-items:stretch; }
   .core-g > .grp{ display:flex; flex-direction:column; }
   .core-g > .grp > .cells{ flex:1; }
+  .ops-g{ align-items:stretch; row-gap:9px; }
+  .ops-g > .col{ display:flex; flex-direction:column; }
+  .ops-g > .col > .grp{ flex:1; display:flex; flex-direction:column; margin:0; }
+  .ops-g > .col > .grp > .cells{ flex:1; }
   .cap-g{ align-items:stretch; }
   .cap-g > .col{ display:flex; flex-direction:column; }
   .cap-g > .col > .grp{ flex:1; display:flex; flex-direction:column; margin:0; }
@@ -341,7 +345,7 @@
     <!-- ===== ③ 管理运维 ===== -->
     <div class="rlab" style="grid-row:5;">管理运维</div>
     <div class="rbox" style="grid-row:5;">
-      <div class="cols" style="grid-template-columns:repeat(3,1fr);">
+      <div class="cols ops-g" style="grid-template-columns:repeat(4,1fr);">
 
         <div class="col">
           <div class="grp">
@@ -370,10 +374,18 @@
 
         <div class="col">
           <div class="grp">
-            <div class="gbar">会话管理 · Agent 评测</div>
+            <div class="gbar">会话管理</div>
             <div class="cells">
               <div class="cl">多维度查看会话</div>
               <div class="cl">会话智能解读</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="grp">
+            <div class="gbar">Agent 评测</div>
+            <div class="cells">
               <div class="cl todo">响应速度 · 准确性</div>
               <div class="cl todo">工具调用 · 稳定性</div>
             </div>
@@ -415,6 +427,17 @@
           </div>
         </div>
 
+        <div class="col">
+          <div class="grp">
+            <div class="gbar">插件管理</div>
+            <div class="cells">
+              <div class="cl">上传插件</div>
+              <div class="cl">插件投放</div>
+              <div class="cl wide">插件管理</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -444,6 +467,14 @@
               <div class="cl todo">Agent Team</div>
               <div class="cl todo">自主拆分任务</div>
               <div class="cl todo">多 Agent 间协同</div>
+            </div>
+          </div>
+          <div class="grp" style="margin:0;">
+            <div class="gbar">自进化能力<em>用得越多，自己越强</em></div>
+            <div class="cells one">
+              <div class="cl todo">记忆与方法沉淀</div>
+              <div class="cl todo">自动沉淀技能</div>
+              <div class="cl todo">工具使用改进</div>
             </div>
           </div>
         </div>
@@ -526,15 +557,6 @@
             </div>
           </div>
 
-        </div>
-
-        <div class="grp" style="margin:8px 0 0;">
-          <div class="gbar">Agent 自进化能力<em>用得越多，自己越强</em></div>
-          <div class="cells" style="grid-template-columns:repeat(3,1fr);">
-            <div class="cl todo">记忆与方法沉淀</div>
-            <div class="cl todo">自动沉淀技能</div>
-            <div class="cl todo">工具使用改进</div>
-          </div>
         </div>
       </div>
     </div>
