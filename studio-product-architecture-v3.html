@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Studio 配置平台 · Q4产品架构规划</title>
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --ink:#1b2430; --txt:#333c4a; --sub:#5a6575; --mut:#8a94a3;
+    --ln:#d6dce5; --ln2:#e8ecf1;
+    --bar:#3d4757; --bar2:#5b6574;
+    --cell:#f1f3f7; --cell-b:#d9dfe7;
+    --stu:#eaf0fa;  --stu-b:#8fa8d4;   /* 租户管理员 · Studio */
+    --usr:#fdf4e8;  --usr-b:#e0b072;   /* 终端用户 · AgentHub/IM */
+    --acc:#2f5fd0;
+  }
+  body{ font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:#fbfcfd; color:var(--txt); padding:24px 20px 38px; line-height:1.5; }
+  .wrap{ max-width:1640px; margin:0 auto; }
+
+  /* ===== 页头 ===== */
+  .top{ display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:12px; flex-wrap:wrap; }
+  .top h1{ font-size:23px; font-weight:800; color:var(--ink); letter-spacing:1px; padding-bottom:6px; border-bottom:4px solid #b32d2d; display:inline-block; }
+  .top .sub{ font-size:12px; color:var(--mut); margin-top:8px; max-width:900px; line-height:1.7; }
+  .lgs{ display:flex; flex-direction:column; gap:7px; align-items:flex-end; }
+  .lg{ display:flex; align-items:center; gap:7px; font-size:11px; color:var(--sub); }
+  .lg .t{ font-weight:800; color:var(--txt); }
+  .lg i{ font-style:normal; padding:3px 11px; border-radius:3px; font-size:10.5px; font-weight:700; }
+  .lg i.on{ background:#fff; border:1px solid #9aa4b2; color:#3d4757; }
+  .lg i.ing{ background:#fff; border:1.5px dashed var(--acc); color:var(--acc); }
+  .lg i.todo{ background:#fff; border:1px solid #cdd4dd; color:var(--mut); }
+  .lg i.rstu{ background:var(--stu); border:1px solid var(--stu-b); color:#2a4a86; }
+  .lg i.rusr{ background:var(--usr); border:1px solid var(--usr-b); color:#8a5416; }
+
+  /* ===== 主栅格 ===== */
+  .arch{ display:grid; grid-template-columns:58px 1fr 44px; gap:7px; align-items:stretch; }
+  .rlab{ background:#eef1f5; border:1px solid var(--ln); border-radius:3px; display:flex; align-items:center; justify-content:center;
+         font-size:12.5px; font-weight:800; color:var(--ink); letter-spacing:3px; writing-mode:vertical-rl; padding:10px 0; }
+  .rbox{ background:#fff; border:1px solid var(--ln); border-radius:3px; padding:11px 13px; }
+
+  /* 数据回流竖带 */
+  .back{ background:linear-gradient(180deg,#f3f7fd,#eaf0fa); border:1px solid var(--stu-b); border-radius:3px;
+         display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:12px 3px; }
+  .back .vt{ writing-mode:vertical-rl; font-size:11.5px; font-weight:800; color:#2a4a86; letter-spacing:2px; }
+  .back .vs{ writing-mode:vertical-rl; font-size:9.5px; color:#5b7bb0; letter-spacing:1px; }
+  .back .dn{ font-size:13px; color:#5b7bb0; }
+
+  /* 层间连接条 */
+  .lk{ grid-column:1 / 3; display:flex; align-items:center; gap:9px; padding:1px 0 2px; }
+  .lk .ln{ flex:1; height:1px; background:var(--ln); }
+  .lk .cp{ font-size:11px; font-weight:700; color:var(--sub); background:#fff; border:1px solid var(--ln); border-radius:3px; padding:3px 13px; white-space:nowrap; }
+  .lk .cp b{ color:var(--ink); }
+  .lk .up{ font-size:11px; color:#8a94a3; }
+
+  /* ===== ① 渠道层 ===== */
+  .chg{ display:grid; grid-template-columns:1.32fr 1fr; gap:11px; }
+  .chset{ border:1px solid var(--ln); border-radius:3px; padding:9px 10px; background:#fcfdfe; }
+  .chset .sh{ font-size:11.5px; font-weight:800; color:var(--ink); margin-bottom:7px; display:flex; align-items:center; gap:6px; }
+  .chset .sh em{ font-style:normal; font-size:10px; font-weight:700; color:var(--mut); }
+  .chset .sh .dot{ width:7px; height:7px; border-radius:2px; }
+  .chs{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .ch{ border:1px solid #b9c2cf; border-radius:3px; background:#fff; padding:9px 11px; }
+  .ch .n{ font-size:13.5px; font-weight:800; color:var(--ink); }
+  .ch .e{ font-size:10px; color:var(--mut); font-weight:700; margin-top:1px; }
+  .ch .d{ font-size:10.5px; color:var(--sub); margin-top:5px; line-height:1.6; }
+  .ch.self{ background:#f6f8fb; border-color:#a6b4c9; }
+  .ch.intg{ background:#f6f8fb; border-color:#a6b4c9; }
+
+  /* ===== ② 分发链路（左 Studio / 右 用户） ===== */
+  .zhead{ display:grid; grid-template-columns:134px 1.5fr 34px 1fr; gap:8px; margin-bottom:7px; }
+  .zh{ font-size:11px; font-weight:800; text-align:center; padding:4px 6px; border-radius:3px; letter-spacing:.5px; }
+  .zh.s{ background:#f5f6f8; border:1px solid var(--ln); color:var(--ink); }
+  .zh.u{ background:#f5f6f8; border:1px solid var(--ln); color:var(--ink); }
+  .zh.b{ font-size:9.5px; color:var(--mut); font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+  .tier{ margin-bottom:9px; }
+  .tier:last-of-type{ margin-bottom:0; }
+  .tbar{ display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+  .tbar .tg{ font-size:10.5px; font-weight:800; color:#fff; background:var(--bar2); border-radius:3px; padding:2px 10px; }
+  .tbar .tx{ font-size:11px; color:var(--sub); }
+  .tbar .tx b{ color:var(--ink); }
+  /* 左侧 Studio 段含 3 节点 + 2 箭头，右侧用户段仅 2 节点 + 1 箭头，故左段按内容量给 1.5fr，避免左挤右空 */
+  .lane{ display:grid; grid-template-columns:134px 1.5fr 34px 1fr; gap:8px; align-items:stretch; padding:4px 0; }
+  .lane + .lane{ border-top:1px dashed var(--ln2); }
+  .lnm{ background:var(--bar); color:#fff; border-radius:3px; padding:8px 11px; display:flex; flex-direction:column; justify-content:center; }
+  .lnm .t{ font-size:12px; font-weight:800; line-height:1.35; }
+  .lnm .s{ font-size:9.5px; opacity:.8; margin-top:2px; font-weight:600; }
+  .seg{ display:flex; align-items:stretch; border-radius:3px; padding:4px; }
+  .seg.s{ background:transparent; }
+  .seg.u{ background:transparent; }
+  .nd{ flex:1 1 0; min-width:0; background:#fff; border:1px solid #9aa4b2; border-radius:3px; padding:7px 9px; display:flex; flex-direction:column; justify-content:center; }
+  .nd .t{ font-size:11.5px; font-weight:700; color:var(--ink); line-height:1.35; }
+  .nd .s{ font-size:9.5px; color:var(--mut); margin-top:2px; line-height:1.45; }
+  /* 仅两处用底色承载语义：.up = 上架动作，.act = 终端用户使用。
+     可见范围不做底色与边框区分，必设 / 可选仅靠 .mk 标签表达 */
+  .nd.up{ background:#fffdf3; border-color:#d3b356; }
+  .nd.vis{ background:#fff; border-color:#9aa4b2; }
+  .nd.vis.opt{ background:#fff; border-color:#9aa4b2; }
+  .nd.act{ background:#fff8ef; border-color:#d39a56; }
+  .ar{ flex:0 0 18px; display:flex; align-items:center; justify-content:center; font-size:11px; color:#8a94a3; }
+  .bd{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+  .bd .bl{ width:1px; flex:1; background:var(--ln); }
+  .bd .bi{ font-size:13px; color:#7d8796; font-weight:800; }
+  .mk{ display:inline-block; font-size:9px; font-weight:800; border-radius:3px; padding:0 5px; margin-left:4px; vertical-align:1px; }
+  .mk.m{ background:#dcefe2; color:#2a6b40; }
+  .mk.o{ background:#e9edf2; color:#6b7686; }
+  .note{ margin-top:9px; background:#f8fafc; border:1px solid var(--ln2); border-radius:3px; padding:8px 11px; font-size:11px; color:var(--sub); line-height:1.75; }
+  .note b{ color:var(--ink); }
+
+  /* SDK/API 直连支线 */
+  .bypass{ margin-top:8px; display:grid; grid-template-columns:134px 1fr; gap:8px; align-items:center; }
+  .bypass .bn{ background:#6b7686; color:#fff; border-radius:3px; padding:7px 9px; font-size:11.5px; font-weight:800; text-align:center; }
+  .bypass .bb{ background:#f6f8fb; border:1px dashed #a6b4c9; border-radius:3px; padding:8px 12px; font-size:11px; color:var(--sub); line-height:1.6; }
+  .bypass .bb b{ color:var(--ink); }
+
+  /* ===== ③④ 分组条 + 功能块 ===== */
+  .cols{ display:grid; gap:8px; }
+  .col{ min-width:0; }
+  .colh{ text-align:center; font-size:11.5px; font-weight:800; color:var(--ink); padding:3px 0 6px; }
+  .colh em{ font-style:normal; font-size:10px; color:var(--mut); font-weight:700; }
+  .grp{ margin-bottom:7px; }
+  .grp:last-child{ margin-bottom:0; }
+  .gbar{ background:var(--bar); color:#fff; font-size:11.5px; font-weight:800; text-align:center; padding:4px 8px; border-radius:3px; margin-bottom:4px; letter-spacing:.4px; }
+  .gbar.s2{ background:var(--bar2); }
+  .gbar em{ font-style:normal; font-size:9.5px; opacity:.7; font-weight:700; margin-left:4px; }
+  .cells{ display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+  .cells.one{ grid-template-columns:1fr; }
+  .cells.three{ grid-template-columns:repeat(3,1fr); }
+  .cl{ background:var(--cell); border:1px solid var(--cell-b); border-radius:3px; padding:5px 7px; font-size:10.5px; color:var(--txt); line-height:1.4; text-align:center; font-weight:600; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:28px; }
+  .cl.ing{ background:#fff; border:1.5px dashed var(--acc); color:var(--acc); }
+  .cl.todo{ background:#fff; border:1px solid #cdd4dd; color:var(--mut); }
+  .sb{ display:inline-block; font-size:9px; font-weight:800; border-radius:3px; padding:1px 6px; margin-top:4px; align-self:flex-start; letter-spacing:.3px; }
+  .sb.ing{ background:#fff; border:1px dashed var(--acc); color:var(--acc); }
+  .sb.todo{ background:#fff; border:1px solid #cdd4dd; color:var(--mut); }
+  /* 深色卡片（.lnm）内的状态徽章：白底虚线在深底上偏弱，改实底实线 + 圆点强化 */
+  .lnm .sb{ font-size:9.5px; padding:1px 7px; border-radius:10px; }
+  .lnm .sb.ing{ background:#fff; border:1px solid #fff; color:#1f47a8; }
+  .lnm .sb.ing::before{ content:"●"; font-size:7px; margin-right:4px; vertical-align:1px; color:#2f5fd0; }
+  .lnm .sb.todo{ background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.45); color:#eef1f6; }
+  .cl.wide{ grid-column:1 / -1; }
+  .cl small{ display:block; font-size:9px; color:var(--mut); font-weight:600; margin-top:1px; }
+
+  /* Agent 本体强调块 */
+  .core{ border:1.5px solid var(--bar); border-radius:3px; padding:8px 10px; background:#f7f9fc; margin-bottom:9px; }
+  .core .ch2{ display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+  .core .ch2 .cb{ font-size:11.5px; font-weight:800; color:#fff; background:var(--bar); border-radius:3px; padding:2px 11px; }
+  .core .ch2 .cs{ font-size:10.5px; color:var(--sub); }
+  .core .ch2 .cs b{ color:var(--ink); }
+  .core-g{ display:grid; grid-template-columns:1fr 1fr; gap:8px; align-items:stretch; }
+  .core-g > .grp{ display:flex; flex-direction:column; }
+  .core-g > .grp > .cells{ flex:1; }
+  .cap-g{ align-items:stretch; }
+  .cap-g > .col{ display:flex; flex-direction:column; }
+  .cap-g > .col > .grp{ flex:1; display:flex; flex-direction:column; margin:0; }
+  .cap-g > .col > .grp > .cells{ flex:1; }
+  .cap-g > .col > .cols{ flex:1; align-items:stretch; }
+  .cap-g > .col > .cols > .grp{ display:flex; flex-direction:column; margin:0; }
+  .cap-g > .col > .cols > .grp > .cells{ flex:1; }
+
+  .baseline{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
+  .baseline .cl{ font-size:11px; }
+
+  .ft{ text-align:center; font-size:10.5px; color:var(--mut); margin-top:14px; }
+  @media(max-width:1340px){ .chg{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>Studio 配置平台 · Q4产品架构规划</h1>
+      <div class="sub">
+        面向租户的 Agent 配置与管理平台 —— 能力建设 → 管理运维 → 上架分发 → 渠道触达，用户数据回流租户
+      </div>
+    </div>
+    <div class="lgs">
+      <div class="lg"><span class="t">状态：</span><i class="on">已上线</i><i class="ing">进行中</i><i class="todo">待启动</i></div>
+    </div>
+  </div>
+
+  <div class="arch">
+
+    <!-- ===== ① 渠道层 ===== -->
+    <div class="rlab" style="grid-row:1;">渠道触达</div>
+    <div class="rbox" style="grid-row:1;">
+      <div class="chg">
+        <div class="chset">
+          <div class="sh"><span class="dot" style="background:#a6b4c9"></span>POPO 消费场景<em>· 有市场 / 发现页，用户可自助添加能力</em></div>
+          <div class="chs">
+            <div class="ch self">
+              <div class="n">IM 中的智能体</div>
+              <div class="e">Agent 绑定智能体机器人</div>
+              <div class="d">用户在 IM 单聊/群聊内直接对话调用</div>
+            </div>
+            <div class="ch self">
+              <div class="n">工作伙伴</div>
+              <div class="e">AgentHub</div>
+              <div class="d">自助创建 / 管理工作伙伴，在发现页添加技能与工具</div>
+            </div>
+          </div>
+        </div>
+        <div class="chset">
+          <div class="sh"><span class="dot" style="background:#a6b4c9"></span>系统集成场景<em>· 无市场概念，业务方定制接入后直调</em></div>
+          <div class="chs">
+            <div class="ch intg">
+              <div class="n">SDK</div>
+              <div class="e">嵌入业务系统</div>
+              <div class="d">业务方定制化接入，嵌到自有页面中使用</div>
+            </div>
+            <div class="ch intg">
+              <div class="n">API</div>
+              <div class="e">接口直接调用</div>
+              <div class="d">提供标准接口，业务系统集成进自有链路</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 数据回流竖带：跨 ①②③ -->
+    <div class="back" style="grid-row:1 / 6;">
+      <span class="dn">▼</span>
+      <span class="vt">数据回流</span>
+      <span class="vs">会话 · 产出物 · 用量 · 评测</span>
+      <span class="dn">▼</span>
+      <span class="vs">全部归属租户</span>
+    </div>
+
+    <div class="lk" style="grid-row:2;">
+      <span class="ln"></span><span class="up">▲</span>
+      <span class="cp"><b>终端用户消费</b> · 可见范围内即可使用</span>
+      <span class="up">▲</span><span class="ln"></span>
+    </div>
+
+    <!-- ===== ② 分发链路 ===== -->
+    <div class="rlab" style="grid-row:3;">分发链路</div>
+    <div class="rbox" style="grid-row:3;">
+
+      <div class="zhead">
+        <div class="zh b">分发物</div>
+        <div class="zh s">租户管理员 · Studio 侧操作</div>
+        <div class="zh b">系统边界</div>
+        <div class="zh u">终端用户 · AgentHub / IM 侧消费</div>
+      </div>
+
+      <!-- 成品 -->
+      <div class="tier">
+        <div class="tbar"><span class="tg">成品</span><span class="tx">用户<b>拿到即用</b>，不需要再创建或组装</span></div>
+        <div class="lane">
+          <div class="lnm"><div class="t">企业伙伴 /<br>个人 Agent</div><div class="s">对象：Agent</div><span class="sb ing">进行中</span></div>
+          <div class="seg s">
+            <div class="nd"><div class="t">配置 Agent + 绑定智能体</div><div class="s">基础配置 · 能力编排 · 机器人绑定</div></div>
+            <div class="ar">→</div>
+            <div class="nd up"><div class="t">上架投放</div><div class="s">发布到租户可用范围</div></div>
+            <div class="ar">→</div>
+            <div class="nd vis"><div class="t">可见范围<span class="mk m">必设</span></div><div class="s">部门 / 人员维度</div></div>
+          </div>
+          <div class="bd"><span class="bl"></span><span class="bi">⇒</span><span class="bl"></span></div>
+          <div class="seg u">
+            <div class="nd"><div class="t">AgentHub 工作伙伴 · IM 智能体</div></div>
+            <div class="ar">→</div>
+            <div class="nd act"><div class="t">直接对话使用</div><div class="s">企业伙伴不可编辑，个人 Agent 可再配置</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 半成品 -->
+      <div class="tier">
+        <div class="tbar"><span class="tg">半成品</span><span class="tx">用户<b>基于它再创建</b>一个属于自己的 Agent</span></div>
+        <div class="lane">
+          <div class="lnm"><div class="t">模板分发</div><div class="s">对象：Agent 模板</div><span class="sb ing">进行中</span></div>
+          <div class="seg s">
+            <div class="nd"><div class="t">配置模板</div><div class="s">预置人设 · 技能 · 工具 · 知识</div></div>
+            <div class="ar">→</div>
+            <div class="nd up"><div class="t">上架投放</div><div class="s">模板状态与投放位管理</div></div>
+            <div class="ar">→</div>
+            <div class="nd vis"><div class="t">可见范围<span class="mk m">必设</span></div><div class="s">部门 / 人员维度</div></div>
+          </div>
+          <div class="bd"><span class="bl"></span><span class="bi">⇒</span><span class="bl"></span></div>
+          <div class="seg u">
+            <div class="nd"><div class="t">AgentHub「发现伙伴」</div></div>
+            <div class="ar">→</div>
+            <div class="nd act"><div class="t">一键创建自己的 Agent</div><div class="s">新建 Agent 归属租户</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 零件 -->
+      <div class="tier">
+        <div class="tbar"><span class="tg">零件</span><span class="tx">用户<b>装配到已有 Agent 上</b>，增强单个 Agent 的能力</span></div>
+        <div class="lane">
+          <div class="lnm"><div class="t">Skills 分发</div><div class="s">对象：技能</div><span class="sb ing">进行中</span></div>
+          <div class="seg s">
+            <div class="nd"><div class="t">创建 / 配置 Skill</div><div class="s">Skill.md · 分类标签 · 启用状态</div></div>
+            <div class="ar">→</div>
+            <div class="nd up"><div class="t">上架</div><div class="s">发布到 AgentHub 添加技能发现页</div></div>
+            <div class="ar">→</div>
+            <div class="nd vis opt"><div class="t">可见范围<span class="mk o">可选</span></div><div class="s">可在租户基础上叠加可见性逻辑</div></div>
+          </div>
+          <div class="bd"><span class="bl"></span><span class="bi">⇒</span><span class="bl"></span></div>
+          <div class="seg u">
+            <div class="nd"><div class="t">AgentHub 技能发现页</div></div>
+            <div class="ar">→</div>
+            <div class="nd act"><div class="t">给 Agent 添加技能</div><div class="s">绑定后随 Agent 权限走</div></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lnm"><div class="t">MCP 分发</div><div class="s">对象：工具</div><span class="sb ing">进行中</span></div>
+          <div class="seg s">
+            <div class="nd"><div class="t">接入 / 配置 MCP</div><div class="s">连接方式 · 鉴权 · 工具发现</div></div>
+            <div class="ar">→</div>
+            <div class="nd up"><div class="t">上架</div><div class="s">发布到 AgentHub 添加工具发现页</div></div>
+            <div class="ar">→</div>
+            <div class="nd vis opt"><div class="t">可见范围<span class="mk o">可选</span></div><div class="s">可在租户基础上叠加可见性逻辑</div></div>
+          </div>
+          <div class="bd"><span class="bl"></span><span class="bi">⇒</span><span class="bl"></span></div>
+          <div class="seg u">
+            <div class="nd"><div class="t">AgentHub 工具发现页</div></div>
+            <div class="ar">→</div>
+            <div class="nd act"><div class="t">给 Agent 添加工具</div><div class="s">绑定后随 Agent 权限走</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SDK/API 支线 -->
+      <div class="bypass">
+        <div class="bn">SDK / API</div>
+        <div class="bb"><b>业务对接</b>：Agent 在 Studio 配置完成后，业务方通过 SDK 嵌入或 API 直连调用。</div>
+      </div>
+
+      <div class="note">
+        <b>数据归属</b>：3 类分发物产生的 Agent、会话、产出物与用量全部归属租户，可在 Studio 后台查看与管理。
+      </div>
+    </div>
+
+    <div class="lk" style="grid-row:4;">
+      <span class="ln"></span><span class="up">▲</span>
+      <span class="cp"><b>上架投放</b></span>
+      <span class="up">▲</span><span class="ln"></span>
+    </div>
+
+    <!-- ===== ③ 管理运维 ===== -->
+    <div class="rlab" style="grid-row:5;">管理运维</div>
+    <div class="rbox" style="grid-row:5;">
+      <div class="cols" style="grid-template-columns:repeat(3,1fr);">
+
+        <div class="col">
+          <div class="grp">
+            <div class="gbar">Agent 管理</div>
+            <div class="cells">
+              <div class="cl">基础配置管理</div>
+              <div class="cl ing">智能体机器人配置</div>
+              <div class="cl">使用范围管理</div>
+              <div class="cl">Agent 数据看板</div>
+              <div class="cl todo">产出物管理</div>
+              <div class="cl todo">企业伙伴配置</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="grp">
+            <div class="gbar">模板管理</div>
+            <div class="cells">
+              <div class="cl ing">配置模板</div>
+              <div class="cl ing">可见性配置</div>
+              <div class="cl wide ing">模板投放</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="grp">
+            <div class="gbar">会话管理 · Agent 评测</div>
+            <div class="cells">
+              <div class="cl">多维度查看会话</div>
+              <div class="cl">会话智能解读</div>
+              <div class="cl todo">响应速度 · 准确性</div>
+              <div class="cl todo">工具调用 · 稳定性</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="grp">
+            <div class="gbar">Prompt 版本管理</div>
+            <div class="cells">
+              <div class="cl">配置 Prompt</div>
+              <div class="cl todo">历史版本记录</div>
+              <div class="cl wide todo">版本回滚</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="grp">
+            <div class="gbar">Skills 管理</div>
+            <div class="cells">
+              <div class="cl">Skills 配置</div>
+              <div class="cl">可见性配置</div>
+              <div class="cl ing">Skills 投放</div>
+              <div class="cl todo">Skills 效果观测</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="grp">
+            <div class="gbar">MCP 管理</div>
+            <div class="cells">
+              <div class="cl">MCP 配置</div>
+              <div class="cl ing">组织 / 个人凭证配置</div>
+              <div class="cl ing">MCP 投放</div>
+              <div class="cl todo">可见性配置</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== ④ Agent 能力供给 ===== -->
+    <div class="rlab" style="grid-row:6;">能力供给</div>
+    <div class="rbox" style="grid-row:6;">
+
+      <!-- Agent 本体 -->
+      <div class="core">
+        <div class="ch2">
+          <span class="cb">Agent 本体</span>
+          <span class="cs">核心资产 —— 决定 Agent 能做多复杂的事</span>
+        </div>
+        <div class="core-g">
+          <div class="grp" style="margin:0;">
+            <div class="gbar">单 Agent 能力<em>一个 Agent 独立完成</em></div>
+            <div class="cells" style="grid-template-columns:repeat(3,1fr);">
+              <div class="cl">基础执行<small>单轮 / 多轮</small></div>
+              <div class="cl todo">长任务 / 目标模式<small>goal 设定目标后自动评估再执行，直至达成</small></div>
+              <div class="cl todo">Plan 模式<small>先列计划 → 用户确认 → 执行计划</small></div>
+            </div>
+          </div>
+          <div class="grp" style="margin:0;">
+            <div class="gbar">多 Agent 能力<em>多个 Agent 协同完成</em></div>
+            <div class="cells">
+              <div class="cl">SubAgent 模式</div>
+              <div class="cl todo">Agent Team</div>
+              <div class="cl todo">自主拆分任务</div>
+              <div class="cl todo">多 Agent 间协同</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent 能力配置 -->
+      <div class="core">
+        <div class="ch2">
+          <span class="cb">Agent 能力配置</span>
+          <span class="cs">围绕 Agent 本体编排的各类能力与信息供给</span>
+        </div>
+        <div class="cols cap-g" style="grid-template-columns:1fr 1.6fr 1fr 1fr;">
+
+          <div class="col">
+            <div class="grp">
+              <div class="gbar">Prompt</div>
+              <div class="cells one">
+                <div class="cl">提示词配置</div>
+                <div class="cl">绑定提示词</div>
+                <div class="cl">变量注入</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="cols" style="grid-template-columns:repeat(4,1fr);">
+              <div class="grp">
+                <div class="gbar">Skills</div>
+                <div class="cells one">
+                  <div class="cl">平台通用</div>
+                  <div class="cl">租户添加</div>
+                  <div class="cl">个人自定义</div>
+                </div>
+              </div>
+              <div class="grp">
+                <div class="gbar">MCP</div>
+                <div class="cells one">
+                  <div class="cl">平台内置</div>
+                  <div class="cl">租户添加</div>
+                  <div class="cl">个人自定义</div>
+                </div>
+              </div>
+              <div class="grp">
+                <div class="gbar">内置工具</div>
+                <div class="cells one">
+                  <div class="cl">平台通用类工具<small>开箱即用</small></div>
+                </div>
+              </div>
+              <div class="grp">
+                <div class="gbar">知识</div>
+                <div class="cells one">
+                  <div class="cl todo">知识本</div>
+                  <div class="cl todo">云空间</div>
+                  <div class="cl todo">本地文件</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="grp">
+              <div class="gbar">记忆</div>
+              <div class="cells one">
+                <div class="cl">会话维度记忆</div>
+                <div class="cl todo">个人画像 / 用户维度记忆</div>
+                <div class="cl todo">记忆提炼 log</div>
+                <div class="cl todo">修改记忆规则</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="grp">
+              <div class="gbar">自动化</div>
+              <div class="cells one">
+                <div class="cl">定时触发</div>
+                <div class="cl todo">事件触发</div>
+                <div class="cl">Webhook 触发</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ⑤ 平台基础 ===== -->
+    <div class="rlab" style="grid-row:7;">平台基础</div>
+    <div class="rbox" style="grid-row:7;">
+      <div class="baseline">
+        <div class="cl">Models 模型管理</div>
+        <div class="cl">租户管理</div>
+        <div class="cl">租户成员管理</div>
+        <div class="cl">账号 Secret Key</div>
+        <div class="cl">用量计费</div>
+        <div class="cl">审计日志</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="ft">Studio 配置平台 · Q4产品架构规划 · 角色分区 · 分发物分层 · 数据回流闭环</div>
+
+</div>
+</body>
+</html>
