@@ -221,13 +221,13 @@
             </div>
             <div class="h-tools">
               <button class="btn line" onclick="openCatMgr()">管理分类</button>
-              <button class="btn line">管理标签</button>
-              <button class="btn ghost">批量设置标签</button>
+              <button class="btn line" title="展示标签可自行新增 / 改名 / 删除，仅本租户可见，不影响发现页分类 Tab">管理标签</button>
+              <button class="btn ghost" title="批量设置展示标签">批量设置标签</button>
               <button class="btn primary">＋ 创建技能</button>
             </div>
           </div>
-          <div class="note" id="skRuleNote">新增字段 <b>AgentHub 状态</b>（默认<b>未上架</b>）；操作列首位为 <b>🚀 上架 / ⤓ 下架</b> 图标。上架前系统校验（<b>全租户统一 4 项</b>）：① <b>状态 = 启用</b> ② <b>已设置分类标签</b> ③ <b>已上传 Skill.md</b> ④ <b>Skill 名称后标签 ≠「私有」</b>（本次<b>新增</b>，用户自建技能不可上架；注：与「展示标签」是两个字段），未满足则不允许上架并给出对应提示（多项命中<b>多行</b>展示）。</div>
-          <div class="note" id="skInitNote" style="background:#eef2ff;border-color:#c7d2fe;color:#3730a3;">📦 <b>存量数据初始化</b>：上线时对<b>已在 AgentHub 技能发现页展示</b>的 POPO 租户 Skills 一次性刷为「已上架」；本租户默认全部「未上架」。<b>校验 ④「Skill 名称后标签 ≠ 私有」本次由 POPO 专属规则推广至全租户</b>，提醒文案统一为 <code>用户自定义技能不可上架</code>。</div>
+          <div class="note" id="skRuleNote">新增字段 <b>AgentHub 状态</b>（默认<b>未上架</b>）；操作列首位为 <b>🚀 上架 / ⤓ 下架</b> 图标。上架前系统校验（<b>全租户统一 4 项</b>）：① <b>状态 = 启用</b> ② <b>已设置分类标签</b> ③ <b>已上传 Skill.md</b> ④ <b>Skill 名称后标签 ≠「私有」</b>（本次<b>新增</b>，用户自建技能不可上架；注：与「展示标签」是两个字段），未满足则不允许上架并给出对应提示（多项命中<b>多行</b>展示）。<br/>🔒 <b>分类标签全量继承「网易 POPO」租户且全部只读</b>（不可新增 / 改名 / 删除，可指派技能）；<b>展示标签</b>仍可由本租户<b>自行新增 / 改名 / 删除</b>。</div>
+          <div class="note" id="skInitNote" style="background:#eef2ff;border-color:#c7d2fe;color:#3730a3;">📦 <b>存量数据初始化</b>：上线时对<b>已在 AgentHub 技能发现页展示</b>的 POPO 租户 Skills 一次性刷为「已上架」；本租户默认全部「未上架」。<b>校验 ④「Skill 名称后标签 ≠ 私有」本次由 POPO 专属规则推广至全租户</b>，提醒文案统一为 <code>用户自定义技能不可上架</code>。<b>租户历史自建的分类标签一次性清空</b>，原挂载技能变为「未设置分类标签」，需从继承标签中重新指派。</div>
           <div class="filters">
             <input class="inp" style="width:280px" id="skQ" placeholder="🔍 搜索技能名称" oninput="renderSkills()">
             <select class="sel" id="skCat" onchange="renderSkills()"><option value="">分类 ▾</option></select>
@@ -375,23 +375,20 @@
 <script>
 /* ================= 数据 ================= */
 /* 分类标签体系
-   INHERITED_CATS：其他租户从「网易 POPO」租户继承的分类标签 —— 只读（不可改名 / 删除），可指派技能
-   注意：POPO 的 HR、法务 等标签【不继承】，其他租户不可见、不可选
-   POPO_ALL_CATS：POPO 租户自身维护的全量分类标签（POPO 视角下全部可编辑）
-   tenantOwnCats：其他租户自建的分类标签 —— 可改名、可删除，仅本租户可见 */
-const INHERITED_CATS=["通用","写云文档","数据分析","创建多维表格"];
+   POPO_ALL_CATS：POPO 租户维护的全量分类标签（POPO 视角下全部可编辑，改动自动同步给其他租户）
+   其他租户：全量继承、全部只读（不可新增 / 改名 / 删除），可指派技能
+   展示标签：与分类标签是两个字段，其他租户可自行新增 / 改名 / 删除（入口为「管理标签」「批量设置标签」） */
 const POPO_ALL_CATS=["通用","写云文档","数据分析","创建多维表格","HR","法务"];
-let tenantOwnCats=["易协作"];
 /* 易协作租户 · Skills（st 启用/停用；dcat 分类标签，空=未打标；md 是否已上传 Skill.md；priv Skill 名称后标签=私有） */
 const yxzSkills=[
   { id:1, name:"域名续费任务提醒", priv:true, desc:"域名续费到期自动提醒与建单", ver:"26.9.2.1", dev:"许明亮", cat:"通用", tags:"许工(许明亮)", ah:false, ico:"⏰", dcat:"通用", st:"启用", md:true },
-  { id:2, name:"工单快速处理", priv:false, desc:"按模板快速处理易协作工单，自动补全字段", ver:"26.8.14.2", dev:"欧思日", cat:"工单", tags:"—", ah:false, ico:"🎫", dcat:"易协作", st:"启用", md:true },
+  { id:2, name:"工单快速处理", priv:false, desc:"按模板快速处理易协作工单，自动补全字段", ver:"26.8.14.2", dev:"欧思日", cat:"工单", tags:"—", ah:false, ico:"🎫", dcat:"通用", st:"启用", md:true },
   { id:3, name:"团队负载查询", priv:false, desc:"查询团队成员当前排期负载与可用工时", ver:"26.7.29.1", dev:"欧思日", cat:"排期", tags:"—", ah:false, ico:"📈", dcat:"", st:"启用", md:true },
-  { id:4, name:"预排期规划", priv:false, desc:"依据需求池与人力自动生成预排期方案", ver:"26.7.29.1", dev:"欧思日", cat:"排期", tags:"—", ah:false, ico:"🗓️", dcat:"易协作", st:"停用", md:true },
+  { id:4, name:"预排期规划", priv:false, desc:"依据需求池与人力自动生成预排期方案", ver:"26.7.29.1", dev:"欧思日", cat:"排期", tags:"—", ah:false, ico:"🗓️", dcat:"数据分析", st:"停用", md:true },
   { id:5, name:"需求拆单建单", priv:false, desc:"把需求描述拆解为子任务并批量建单", ver:"26.7.29.1", dev:"欧思日", cat:"需求", tags:"—", ah:false, ico:"🧾", dcat:"", st:"停用", md:false },
   { id:6, name:"popo-doc", priv:false, desc:"云文档创建、编辑与搜索", ver:"26.8.13.1", dev:"欧思日", cat:"通用", tags:"—", ah:false, ico:"📄", dcat:"写云文档", st:"启用", md:true },
   { id:7, name:"popo-im", priv:false, desc:"消息发送、找人与群组信息查询", ver:"26.8.13.1", dev:"欧思日", cat:"通用", tags:"—", ah:false, ico:"💬", dcat:"通用", st:"启用", md:false },
-  { id:8, name:"knowledge-assistant", priv:false, desc:"项目知识智能助手部署指导，指导用户创建两个 SubAgent。", ver:"26.9.10.1", dev:"欧思日", cat:"通用", tags:"—", ah:true, ico:"📚", dcat:"易协作", st:"启用", md:true }
+  { id:8, name:"knowledge-assistant", priv:false, desc:"项目知识智能助手部署指导，指导用户创建两个 SubAgent。", ver:"26.9.10.1", dev:"欧思日", cat:"通用", tags:"—", ah:true, ico:"📚", dcat:"通用", st:"启用", md:true }
 ];
 const yxzMcps=[
   { id:1, name:"易协作·工单查询", desc:"查询易协作工单状态、流转与处理人", auth:"自定义 Header", st:"正常", bind:3, ah:false, ico:"🧩" },
@@ -473,12 +470,12 @@ function toggleStudioTenant(){
     : '易协作租户 · 工具管理；上架至 AgentHub 后混排在 POPO 官方工具之后';
   // Skills 规则说明：①②③④ 全租户统一
   document.getElementById('skRuleNote').innerHTML = popo
-    ? '新增字段 <b>AgentHub 状态</b>；上架前系统校验（<b>全租户统一 4 项</b>）：① <b>状态 = 启用</b> ② <b>已设置分类标签</b> ③ <b>已上传 Skill.md</b> ④ <b>Skill 名称后标签 ≠「私有」</b>（即用户自建技能不可上架；注：与「展示标签」是两个字段），未满足则不允许上架并给出对应提示（多项命中<b>多行</b>展示）。'
-    : '新增字段 <b>AgentHub 状态</b>（默认<b>未上架</b>）；操作列首位为 <b>🚀 上架 / ⤓ 下架</b> 图标。上架前系统校验（<b>全租户统一 4 项</b>）：① <b>状态 = 启用</b> ② <b>已设置分类标签</b> ③ <b>已上传 Skill.md</b> ④ <b>Skill 名称后标签 ≠「私有」</b>（本次<b>新增</b>，用户自建技能不可上架；注：与「展示标签」是两个字段），未满足则不允许上架并给出对应提示（多项命中<b>多行</b>展示）。';
+    ? '新增字段 <b>AgentHub 状态</b>；上架前系统校验（<b>全租户统一 4 项</b>）：① <b>状态 = 启用</b> ② <b>已设置分类标签</b> ③ <b>已上传 Skill.md</b> ④ <b>Skill 名称后标签 ≠「私有」</b>（即用户自建技能不可上架；注：与「展示标签」是两个字段），未满足则不允许上架并给出对应提示（多项命中<b>多行</b>展示）。<br/>🏷️ POPO 为<b>分类标签源头</b>：此处新增 / 改名 / 删除分类标签<b>自动同步至全部租户</b>；其他租户<b>只读继承</b>。'
+    : '新增字段 <b>AgentHub 状态</b>（默认<b>未上架</b>）；操作列首位为 <b>🚀 上架 / ⤓ 下架</b> 图标。上架前系统校验（<b>全租户统一 4 项</b>）：① <b>状态 = 启用</b> ② <b>已设置分类标签</b> ③ <b>已上传 Skill.md</b> ④ <b>Skill 名称后标签 ≠「私有」</b>（本次<b>新增</b>，用户自建技能不可上架；注：与「展示标签」是两个字段），未满足则不允许上架并给出对应提示（多项命中<b>多行</b>展示）。<br/>🔒 <b>分类标签全量继承「网易 POPO」租户且全部只读</b>（不可新增 / 改名 / 删除，可指派技能）；<b>展示标签</b>仍可由本租户<b>自行新增 / 改名 / 删除</b>。';
   // 初始化 callout：POPO 视角强调"当前列表中已上架条目即为存量初始化结果"
   document.getElementById('skInitNote').innerHTML = popo
     ? '📦 <b>存量数据初始化（POPO 视角）</b>：下表中标记为「已上架」的 Skills，即上线时从原 AgentHub 技能发现页存量<b>一次性刷数据</b>得到；无需 POPO 管理员再次操作。后续新上架统一走 ①②③④ 校验流程。<b>存量已上架条目不因新增校验 ④ 被下架。</b>'
-    : '📦 <b>存量数据初始化</b>：上线时对<b>已在 AgentHub 技能发现页展示</b>的 POPO 租户 Skills 一次性刷为「已上架」；本租户默认全部「未上架」。<b>校验 ④「Skill 名称后标签 ≠ 私有」本次由 POPO 专属规则推广至全租户</b>，提醒文案统一为 <code>用户自定义技能不可上架</code>。';
+    : '📦 <b>存量数据初始化</b>：上线时对<b>已在 AgentHub 技能发现页展示</b>的 POPO 租户 Skills 一次性刷为「已上架」；本租户默认全部「未上架」。<b>校验 ④「Skill 名称后标签 ≠ 私有」本次由 POPO 专属规则推广至全租户</b>，提醒文案统一为 <code>用户自定义技能不可上架</code>。<b>租户历史自建的分类标签一次性清空</b>，原挂载技能变为「未设置分类标签」，需从继承标签中重新指派。';
   document.getElementById('mcRuleNote').innerHTML = popo
     ? '新增字段 <b>AgentHub 状态</b>；POPO 租户 MCP 的上架 / 下架行为与其他租户一致，本次通过刷数据把存量已展示的 MCP 直接置为「已上架」。'
     : '新增字段 <b>AgentHub 状态</b>（默认<b>未上架</b>）；操作列新增 <b>上架 / 下架</b> 按钮。上架后该 MCP 出现在本租户 Agent 发现页「添加工具」列表，<b>紧随 POPO 官方 MCP 之后</b>。';
@@ -508,11 +505,11 @@ function goView(v,btn){
 }
 
 /* ================= Studio · Skills ================= */
-/* 当前租户可用的分类标签池：POPO = 全量可编辑；其他租户 = 继承 4 个（只读）+ 自建 */
+/* 当前租户可用的分类标签池：全租户统一 = POPO 分类标签全集（POPO 可编辑，其他租户只读继承） */
 function catPool(){
-  return studioTenant==='popo' ? POPO_ALL_CATS.slice() : INHERITED_CATS.concat(tenantOwnCats);
+  return POPO_ALL_CATS.slice();
 }
-function isInheritedCat(c){ return studioTenant!=='popo' && INHERITED_CATS.includes(c); }
+function isInheritedCat(c){ return studioTenant!=='popo' && POPO_ALL_CATS.includes(c); }
 /* 分类标签筛选下拉：按当前租户标签池动态填充 */
 function fillCatFilter(){
   const sel=document.getElementById('skCat');
@@ -571,69 +568,65 @@ function showValidate(name, errs){
 function closeVa(){ document.getElementById('vaOverlay').classList.remove('on'); }
 
 /* ============ 管理分类标签 ============
-   其他租户：继承 POPO 的 4 个标签（只读，不可改名 / 删除，可指派技能）+ 自建标签（可改名 / 可删除）
-   POPO 租户：作为标签源头，全部标签可维护
-   HR、法务 不在继承范围内，其他租户看不到 */
+   其他租户：全量继承 POPO 的分类标签（只读，不可新增 / 改名 / 删除，可指派技能）
+   POPO 租户：作为标签源头，全部标签可维护，改动自动同步其他租户
+   展示标签不在此弹窗内，租户可通过「管理标签」自行维护 */
 function openCatMgr(){ renderCatMgr(); document.getElementById('catOverlay').classList.add('on'); }
 function closeCatMgr(){ document.getElementById('catOverlay').classList.remove('on'); renderSkills(); }
 function catUsedCount(c){ return curSkills().filter(s=>s.dcat===c).length; }
 function renderCatMgr(){
   const popo=studioTenant==='popo';
   document.getElementById('catMgrNote').innerHTML = popo
-    ? '<b>POPO 官方租户</b>为分类标签的<b>源头</b>，全部标签均可改名 / 删除。<br/>其中 <b>通用、写云文档、数据分析、创建多维表格</b> 会被<b>其他租户继承</b>（改名后同步生效）；<b>HR、法务不下发</b>给其他租户。'
-    : '<b>🔒 继承自「网易 POPO」租户</b>的标签为<b>只读</b>：<b>不能改名、不能删除</b>，但<b>可以正常指派技能</b>。<br/>仅继承 <b>通用 / 写云文档 / 数据分析 / 创建多维表格</b> 这 4 个；POPO 的 <b>HR、法务等标签不继承</b>，此处不出现。<br/><b>✎ 本租户自建</b>的标签可改名、可删除，仅本租户可见。';
+    ? '<b>POPO 官方租户</b>为分类标签的<b>源头</b>，全部标签均可新增 / 改名 / 删除。<br/>所有标签<b>全量下发其他租户</b>（含 <b>HR、法务</b>）；POPO 的改名 / 新增 / 删除<b>自动同步生效</b>。'
+    : '<b>🔒 全部分类标签继承自「网易 POPO」租户</b>，均为<b>只读</b>：<b>不能新增、不能改名、不能删除</b>，但<b>可以正常指派技能</b>。<br/>继承范围为 POPO 的<b>全部分类标签</b>（含 <b>HR、法务</b>），POPO 后续调整自动同步。<br/><b>展示标签</b>不受此限制：可在 Skills 页「<b>管理标签</b>」中自行新增 / 改名 / 删除，仅本租户可见，且<b>不产生新的分类 Tab</b>。';
 
   const rows=[];
   if(popo){
     POPO_ALL_CATS.forEach(c=>{
-      const shared=INHERITED_CATS.includes(c);
       rows.push(`<tr><td><span class="tag violet">${c}</span></td>
-        <td>${shared?'<span class="tag blue">下发其他租户</span>':'<span class="tag gray">仅 POPO</span>'}</td>
+        <td><span class="tag blue">下发全部租户</span></td>
         <td class="muted">${catUsedCount(c)} 个技能</td>
-        <td><div class="ops"><span class="txb">改名</span><span class="txb del">删除</span></div></td></tr>`);
+        <td><div class="ops"><span class="txb" onclick="renameCat('${c}')">改名</span><span class="txb del" onclick="delCat('${c}')">删除</span></div></td></tr>`);
     });
   }else{
-    INHERITED_CATS.forEach(c=>{
+    POPO_ALL_CATS.forEach(c=>{
       rows.push(`<tr><td><span class="tag blue">${c} 🔒</span></td>
         <td><span class="tag blue">继承 · 只读</span></td>
         <td class="muted">${catUsedCount(c)} 个技能</td>
         <td><div class="ops"><span class="txb dis" title="继承标签不可改名">改名</span><span class="txb dis" title="继承标签不可删除">删除</span></div></td></tr>`);
     });
-    tenantOwnCats.forEach(c=>{
-      rows.push(`<tr><td><span class="tag amber">${c}</span></td>
-        <td><span class="tag amber">本租户自建</span></td>
-        <td class="muted">${catUsedCount(c)} 个技能</td>
-        <td><div class="ops"><span class="txb" onclick="renameCat('${c}')">改名</span><span class="txb del" onclick="delCat('${c}')">删除</span></div></td></tr>`);
-    });
   }
   document.getElementById('catMgrList').innerHTML=`<div class="tcard"><table>
     <thead><tr><th style="min-width:150px">分类标签</th><th style="min-width:130px">来源</th><th>已指派</th><th style="min-width:110px">操作</th></tr></thead>
     <tbody>${rows.join("")}</tbody></table></div>`;
-  document.getElementById('catMgrAdd').style.display='flex';
+  document.getElementById('catMgrAdd').style.display = popo ? 'flex' : 'none';
 }
 function addCat(){
+  if(studioTenant!=='popo'){ toast('分类标签继承自 POPO 租户，不支持新增'); return; }
   const box=document.getElementById('catNewName');
   const name=(box.value||"").trim();
   if(!name){ toast('请输入分类标签名称'); return; }
   if(catPool().includes(name)){ toast('该分类标签已存在'); return; }
-  if(studioTenant==='popo'){ POPO_ALL_CATS.push(name); } else { tenantOwnCats.push(name); }
+  POPO_ALL_CATS.push(name);
   box.value=''; renderCatMgr(); fillCatFilter();
-  toast('已新增分类标签「'+name+'」');
+  toast('已新增分类标签「'+name+'」（已同步至全部租户）');
 }
 function renameCat(c){
+  if(studioTenant!=='popo'){ toast('继承标签不可改名'); return; }
   const name=(prompt('将「'+c+'」改名为：', c)||"").trim();
   if(!name||name===c) return;
   if(catPool().includes(name)){ toast('该分类标签已存在'); return; }
-  tenantOwnCats=tenantOwnCats.map(x=>x===c?name:x);
-  curSkills().forEach(s=>{ if(s.dcat===c) s.dcat=name; });
-  renderCatMgr(); fillCatFilter(); toast('已改名为「'+name+'」');
+  POPO_ALL_CATS[POPO_ALL_CATS.indexOf(c)]=name;
+  [...yxzSkills,...popoSkills].forEach(s=>{ if(s.dcat===c) s.dcat=name; });
+  renderCatMgr(); fillCatFilter(); toast('已改名为「'+name+'」（已同步至全部租户）');
 }
 function delCat(c){
-  const n=catUsedCount(c);
-  if(!confirm('确认删除分类标签「'+c+'」？'+(n?'\n\n当前有 '+n+' 个技能使用该标签，删除后这些技能将变为「未设置分类标签」，已上架的技能不受影响，但重新上架时会被校验 ② 拦截。':''))) return;
-  tenantOwnCats=tenantOwnCats.filter(x=>x!==c);
-  curSkills().forEach(s=>{ if(s.dcat===c) s.dcat=""; });
-  renderCatMgr(); fillCatFilter(); toast('已删除分类标签「'+c+'」');
+  if(studioTenant!=='popo'){ toast('继承标签不可删除'); return; }
+  const n=[...yxzSkills,...popoSkills].filter(s=>s.dcat===c).length;
+  if(!confirm('确认删除分类标签「'+c+'」？'+(n?'\n\n当前有 '+n+' 个技能使用该标签（含其他租户），删除后这些技能将变为「未设置分类标签」，已上架的技能不受影响，但重新上架时会被校验 ② 拦截。':''))) return;
+  POPO_ALL_CATS.splice(POPO_ALL_CATS.indexOf(c),1);
+  [...yxzSkills,...popoSkills].forEach(s=>{ if(s.dcat===c) s.dcat=""; });
+  renderCatMgr(); fillCatFilter(); toast('已删除分类标签「'+c+'」（已同步至全部租户）');
 }
 
 /* ================= Studio · MCP ================= */
@@ -692,7 +685,7 @@ function renderAgentHub(){
   const y=agentTenant==='yxz';
   const ts=tenantSkills(), tt=tenantTools();
   document.getElementById('ahNote').innerHTML= y
-    ? `Agent 归属租户 = <b>易协作</b>。发现页供给 = <b>POPO 官方</b> + <b>易协作已上架能力</b>（当前易协作已上架：技能 <b>${ts.length}</b> 个、工具 <b>${tt.length}</b> 个）。技能<b>按租户设置的分类标签</b>归入已有 Tab 或新增 Tab；工具排在 POPO 工具之后。`
+    ? `Agent 归属租户 = <b>易协作</b>。发现页供给 = <b>POPO 官方</b> + <b>易协作已上架能力</b>（当前易协作已上架：技能 <b>${ts.length}</b> 个、工具 <b>${tt.length}</b> 个）。技能<b>按租户指派的继承分类标签</b>混排进对应 Tab（<b>不会新增租户专属 Tab</b>）；工具排在 POPO 工具之后。`
     : `Agent 归属租户 = <b>POPO</b>。发现页<b>仅展示 POPO 官方供给</b>，与线上现状一致；<b>看不到易协作租户的能力</b>（租户隔离）。`;
   // 已绑定列表
   const wrap=document.getElementById('boundWrap');
@@ -733,9 +726,7 @@ function renderCatTabs(){
   if(capKind!=='skill'){ box.style.display='none'; return; }   // 工具无分类 Tab
   box.style.display='flex';
   const base=Object.keys(popoSkillsAH);
-  const extra=[];
-  tenantSkills().forEach(s=>{ if(!base.includes(s.dcat)&&!extra.includes(s.dcat)) extra.push(s.dcat); });
-  const cats=base.concat(extra);
+  const cats=POPO_ALL_CATS.filter(c=>base.includes(c)||tenantSkills().some(s=>s.dcat===c));
   if(!cats.includes(curCat)) curCat=cats[0];
   box.innerHTML=cats.map(c=>`<div class="cat ${curCat===c?'on':''}" onclick="pickCat('${c}')">${c}</div>`).join("");
 }
