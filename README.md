@@ -6,6 +6,7 @@ POPO 产品团队对外分享的产品方案、PRD、规划文档存放仓库。
 
 | 文档 | 在线预览 | 说明 |
 |------|---------|------|
+| Studio 会话导出交互原型 | [在线预览](https://zzhen6930-wq.github.io/product-docs/studio-session-export-prototype.html) | 单条/批量异步导出、事件类型列、智能体和每轮 trace 耗时 · 模拟数据 |
 | Fabric 平台授权卡片个性化（一期 MVP） | [📖 在线查看](https://zzhen6930-wq.github.io/product-docs/fabric-caller-prd-v1.html) | Fabric 平台支持按业务方身份显示个性化授权卡片文案的方案 |
 | POPO CLI 宣传 Poster | [🎨 在线查看](https://zzhen6930-wq.github.io/product-docs/popo-cli-poster.html) | POPO CLI 产品介绍宣传海报 |
 
