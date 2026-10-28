@@ -6,7 +6,7 @@ POPO 产品团队对外分享的产品方案、PRD、规划文档存放仓库。
 
 | 文档 | 在线预览 | 说明 |
 |------|---------|------|
-| Studio 会话阅读与诊断原型 | [在线体验](https://zzhen6930-wq.github.io/product-docs/studio-session-diagnostics-prototype.html) | 对话优先、过程折叠、失败恢复关联、耗时分布及模型上下文 · 新设计方案 |
+| Studio 会话阅读与诊断原型 | [在线体验](https://zzhen6930-wq.github.io/product-docs/studio-session-diagnostics-prototype.html) | 保留原 trace 时间线，仅折叠过程事件；展开沿用原事件列表与详情抽屉 |
 | Studio 会话导出 PRD | [在线阅读](https://zzhen6930-wq.github.io/product-docs/studio-session-export-prd.html) | 导出范围、Excel 字段与事件列、异步任务、边界处理及验收标准 · v1.1 |
 | Studio 会话导出交互原型 | [在线预览](https://zzhen6930-wq.github.io/product-docs/studio-session-export-prototype.html) | 单条/批量异步导出、事件类型列、智能体、应用场景和每轮 trace 耗时 · 模拟数据 |
 | Fabric 平台授权卡片个性化（一期 MVP） | [📖 在线查看](https://zzhen6930-wq.github.io/product-docs/fabric-caller-prd-v1.html) | Fabric 平台支持按业务方身份显示个性化授权卡片文案的方案 |
